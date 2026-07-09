@@ -1,0 +1,17 @@
+{
+  "name": "kazoo-gang",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5178",
+    "build": "vite build",
+    "preview": "vite preview --port 5178"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  }
+}
