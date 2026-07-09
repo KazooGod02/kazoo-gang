@@ -8,10 +8,12 @@ import { mountFlappy } from "./games/flappy.js";
 import { mountSnake } from "./games/snake.js";
 import { mountGato } from "./games/gato.js";
 import { mountRunner } from "./games/runner.js";
+import { mountFnaf } from "./games/fnaf.js";
 import { store, seedIfEmpty } from "./store.js";
 import { isAdmin, toggleAdmin, onAdminChange } from "./admin.js";
 import { mountNews } from "./channels/news.js";
 import { mountGang } from "./channels/gang.js";
+import { checkEventPopup, openEventAdmin } from "./events.js";
 
 function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -32,13 +34,14 @@ export function runMenu(root) {
     </div>
     <div class="mid" id="mid"></div>
     <div class="botbar">
-      <div class="bl"><button id="adminBtn" class="admin-btn">🔒 ADMIN</button><span id="hint">◄ ► CANAL · OK ENTRAR · ESC VOLVER</span></div>
+      <div class="bl"><button id="adminBtn" class="admin-btn">🔒 ADMIN</button><button id="evBtn" class="admin-btn" style="display:none">🗓️ EVENTOS</button><span id="hint">◄ ► CANAL · OK ENTRAR · ESC VOLVER</span></div>
       <div class="vol"><span>VOL</span><input type="range" id="vol" min="0" max="100" value="60" /><span id="volval">60</span></div>
     </div>`;
 
   const mid = screen.querySelector("#mid");
   const chNum = screen.querySelector("#chNum");
   const adminBtn = screen.querySelector("#adminBtn");
+  const evBtn = screen.querySelector("#evBtn");
 
   const liveState = { online: null, text: "" };
   let sel = 0;
@@ -95,6 +98,7 @@ export function runMenu(root) {
           { t: "🐍 Snake", m: mountSnake },
           { t: "#  Gato vs IA", m: mountGato },
           { t: "🏃 Kazoo Runner", m: mountRunner },
+          { t: "🌙 Noche en Kazoo (FNAF)", m: mountFnaf },
         ];
         let gclean = null;
         function lobby() {
@@ -198,9 +202,15 @@ export function runMenu(root) {
 
   // Admin
   adminBtn.onclick = () => toggleAdmin();
-  onAdminChange((admin) => {
+  evBtn.onclick = () => openEventAdmin(audio);
+  function applyAdminUI(admin) {
     adminBtn.textContent = admin ? "🔓 ADMIN ✓" : "🔒 ADMIN";
     adminBtn.classList.toggle("on", admin);
+    evBtn.style.display = admin ? "" : "none";
+  }
+  applyAdminUI(isAdmin());
+  onAdminChange((admin) => {
+    applyAdminUI(admin);
     if (inChannel && (sel === 2 || sel === 3)) openChannel();
   });
 
@@ -220,4 +230,6 @@ export function runMenu(root) {
 
   // Aviso al entrar si hay noticias sin ver
   if (store.hasUnseen()) setTimeout(() => showToast(store.news()[0].title), 900);
+  // Aviso de evento próximo (≤ ~3 días)
+  setTimeout(() => checkEventPopup(crt, audio), 1700);
 }

@@ -16,15 +16,15 @@ export const CONFIG = {
     "cJnUMnW9Wmc", "YKzxFLxfW0M",
   ],
 
-  // Canal 04 · KAZOO GANG (pega tu invitación de Discord: https://discord.gg/xxxx)
-  discordInvite: "",
+  // Canal 04 · KAZOO GANG (invitación de Discord)
+  discordInvite: "https://discord.gg/uCMbcCzVJM",
 
-  // Contraseña de ADMIN (para publicar noticias y moderar el graffiti).
+  // Contraseña de ADMIN (para publicar noticias, eventos y moderar el muro).
   // OJO: es un candado suave (visible en el código). Cámbiala por la tuya.
-  adminPassword: "kazoo-admin-2026",
+  adminPassword: "kazoo0209",
 
-  // Canal 05 · MINIJUEGOS — cambia por la foto de tu gata: pon /gata.png en public/
-  catImage: B + "logo.png",
+  // Canal 05 · MINIJUEGOS — foto de tu gata (ponla en public/gata.png)
+  catImage: B + "gata.png",
   logoImage: B + "logo.png",
 
   // Noticias iniciales (solo se cargan la 1ª vez; luego mandas tú desde el panel admin)

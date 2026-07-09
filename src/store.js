@@ -9,6 +9,7 @@ import { CONFIG } from "./config.js";
 const K_NEWS = "kg_news";
 const K_GRAF = "kg_graffiti";
 const K_SEEN = "kg_seen_news";
+const K_EVT = "kg_events";
 
 function read(k, def) {
   try {
@@ -64,7 +65,21 @@ export const store = {
     write(K_GRAF, store.graffiti().filter((x) => x.id !== id));
     return store.graffiti();
   },
+
+  // ── Eventos ──
+  events: () => read(K_EVT, []),
+  addEvent(e) { const a = store.events(); a.push(e); write(K_EVT, a); return a; },
+  updateEvent(id, patch) { write(K_EVT, store.events().map((x) => (x.id === id ? { ...x, ...patch } : x))); return store.events(); },
+  deleteEvent(id) { write(K_EVT, store.events().filter((x) => x.id !== id)); return store.events(); },
 };
+
+// Identidad anónima por navegador (para saber qué cosas del muro son "tuyas").
+const K_OWNER = "kg_owner";
+export function ownerId() {
+  let id = localStorage.getItem(K_OWNER);
+  if (!id) { id = uid(); localStorage.setItem(K_OWNER, id); }
+  return id;
+}
 
 // Siembra las noticias iniciales solo la primera vez.
 export function seedIfEmpty() {
