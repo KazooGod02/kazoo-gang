@@ -42,6 +42,10 @@ export function blip() {
 export function beep(freq = 440, dur = 0.06) {
   tone(freq, dur, "square", 0.1);
 }
+// Tick muy sutil para el hover.
+export function tick() {
+  tone(1500, 0.012, "square", 0.03);
+}
 export function enterSfx() {
   tone(300, 0.08, "square", 0.12);
   setTimeout(() => tone(600, 0.1, "square", 0.12), 70);

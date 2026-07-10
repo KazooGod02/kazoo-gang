@@ -20,8 +20,9 @@ button { font-family: inherit; }
 
 /* ── Overlays CRT compartidos ── */
 .scanlines {
-  position: absolute; inset: 0; z-index: 40; pointer-events: none;
+  position: absolute; inset: 0; z-index: 40; pointer-events: none; opacity: .9;
   background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.22) 2px 3px);
+  animation: scanbreath 5.5s ease-in-out infinite, scanroll 9s linear infinite;
 }
 .vignette {
   position: absolute; inset: 0; z-index: 41; pointer-events: none;
@@ -30,9 +31,10 @@ button { font-family: inherit; }
 .grain {
   position: absolute; inset: 0; z-index: 39; pointer-events: none; opacity: .05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain .5s steps(2) infinite;
+  animation: grain .5s steps(2) infinite, grainbreath 6s ease-in-out infinite;
 }
 @keyframes grain { to { background-position: 40px 22px; } }
+@keyframes grainbreath { 0%,100% { opacity: .04; } 50% { opacity: .08; } }
 .flicker { animation: flick 7s infinite; }
 @keyframes flick { 0%,96%,100% { opacity: 1; } 97% { opacity: .86; } 98% { opacity: 1; } 99% { opacity: .93; } }
 
@@ -79,12 +81,15 @@ button { font-family: inherit; }
   padding: 9px 14px; font-size: 17px; letter-spacing: 1px; cursor: pointer; white-space: nowrap;
   transition: background .08s; border-left: 2px solid transparent;
 }
-.menu-list li:hover { background: rgba(250,77,213,.14); }
-.menu-list li.sel { background: var(--m); color: #0a0410; font-weight: bold; box-shadow: 0 0 18px rgba(250,77,213,.5); }
+.menu-list li:hover { background: rgba(250,77,213,.14); box-shadow: inset 0 0 20px rgba(250,77,213,.14); }
+.menu-list li.sel { background: var(--m); color: #0a0410; font-weight: bold; animation: selbreathe 2.6s ease-in-out infinite; }
+@keyframes selbreathe { 0%,100% { box-shadow: 0 0 14px rgba(250,77,213,.4); } 50% { box-shadow: 0 0 26px rgba(250,77,213,.78); } }
 
 .preview {
   width: 46%; border: 2px solid var(--m); background: rgba(250,77,213,.05); padding: 18px;
-  display: flex; flex-direction: column; gap: 8px; box-shadow: inset 0 0 26px rgba(250,77,213,.12); overflow: hidden;
+  display: flex; flex-direction: column; gap: 8px; overflow: hidden;
+  box-shadow: inset 0 0 26px rgba(250,77,213,.12), 0 0 34px -10px rgba(250,77,213,.3);
+  animation: borderflick 11s infinite;
 }
 .pv-tag { font-size: 12px; color: var(--mud); letter-spacing: 1px; }
 .pv-big { font-size: 21px; color: #fff; font-weight: bold; }
@@ -109,9 +114,10 @@ button { font-family: inherit; }
 .stage { flex: 1; position: relative; overflow: hidden; }
 .stage iframe { border: 0; width: 100%; height: 100%; display: block; }
 
-.btn { background: var(--m); color: #0a0410; border: none; font-weight: bold; padding: 8px 16px; cursor: pointer; text-decoration: none; display: inline-block; }
-.btn:hover { filter: brightness(1.1); }
+.btn { background: var(--m); color: #0a0410; border: none; font-weight: bold; padding: 8px 16px; cursor: pointer; text-decoration: none; display: inline-block; transition: filter .15s, box-shadow .15s, background .15s; }
+.btn:hover { filter: brightness(1.12); box-shadow: 0 0 16px rgba(250,77,213,.5); }
 .btn.ghost { background: transparent; border: 1px solid var(--m); color: var(--m); }
+.btn.ghost:hover { background: rgba(250,77,213,.12); box-shadow: 0 0 14px rgba(250,77,213,.32); }
 .btn.enter { align-self: flex-start; }
 
 /* Cinema / teatro */
@@ -276,3 +282,87 @@ canvas.game { background: #05060a; display: block; image-rendering: pixelated; m
 .mini { width: 24px; height: 22px; background: #07060b; border: 1px solid var(--m-d); color: var(--m); cursor: pointer; margin-left: 3px; }
 .modal textarea.rt-body { width: 100%; resize: vertical; font-family: inherit; }
 .modal input[type=datetime-local] { background: #07060b; border: 1px solid var(--m-d); color: #fff; padding: 6px 8px; font-family: inherit; }
+
+/* ═══════════════════════════════════════════════════════════
+   "Sistema vivo" — profundidad, HUD y microdetalles.
+   Mismo estilo CRT; puro detalle, cero rediseño.
+   Capas: BG(fx-grad 38) · grain 39 · scanlines 40 · vignette 41 ·
+          bloom 42 · hud-corner 43 · fx-glitch 45.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Gradiente casi imperceptible + viñeta cálida de arriba */
+.fx-grad {
+  position: absolute; inset: 0; z-index: 38; pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(250,77,213,.05), transparent 55%),
+    linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.28));
+}
+/* Bloom tenue que respira en el centro */
+.fx-bloom {
+  position: absolute; inset: 0; z-index: 42; pointer-events: none;
+  background: radial-gradient(55% 45% at 50% 44%, rgba(250,77,213,.06), transparent 72%);
+  animation: bloom 8s ease-in-out infinite;
+}
+@keyframes bloom { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+
+/* Glitch / cambio de frecuencia entre canales + interferencia ocasional */
+.fx-glitch { position: absolute; inset: 0; z-index: 45; pointer-events: none; opacity: 0; overflow: hidden; }
+.fx-glitch.on { animation: freqflash .2s steps(3) forwards; }
+.fx-glitch.on.strong { animation: freqflash .3s steps(4) forwards; }
+.fx-glitch.on::before {
+  content: ""; position: absolute; left: 0; right: 0; height: 13%;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,.16), transparent);
+  animation: rollbar .28s linear forwards;
+}
+@keyframes freqflash {
+  0% { opacity: 0; }
+  20% { opacity: 1; background: repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 2px, transparent 2px 4px); transform: translateY(-.6%); }
+  60% { opacity: .8; transform: translateY(.5%); }
+  100% { opacity: 0; transform: none; }
+}
+@keyframes rollbar { from { top: -16%; } to { top: 110%; } }
+
+/* Etiquetas técnicas decorativas en las esquinas */
+.hud-corner { position: absolute; inset: 0; z-index: 43; pointer-events: none; font-size: 10px; letter-spacing: 1px; color: rgba(185,167,201,.4); }
+.hud-corner .hc-tl { position: absolute; top: 8px; left: 14px; }
+.hud-corner .hc-br { position: absolute; bottom: 8px; right: 14px; }
+
+/* HUD superior (centro de la barra): señal + estado del sistema */
+.hud-top { display: flex; align-items: center; gap: 12px; align-self: center; font-size: 11px; color: var(--dim); letter-spacing: 1px; }
+.hud-sig { color: var(--m); letter-spacing: 2px; text-shadow: 0 0 8px rgba(250,77,213,.5); }
+.hud-tag { color: var(--mud); min-width: 96px; }
+.corner-sub { font-size: 10px; color: rgba(185,167,201,.5); letter-spacing: 1px; margin-top: 2px; }
+
+/* HUD inferior (chips: latencia, cpu, ram, now playing) */
+.hud-bot { display: flex; align-items: center; gap: 14px; align-self: center; font-size: 11px; color: var(--dim); letter-spacing: 1px; }
+.hud-chip { white-space: nowrap; }
+.hud-chip b { color: var(--m); font-weight: bold; }
+#hudNow { color: var(--mud); }
+
+/* Caret parpadeante (terminal) tras el subtítulo */
+.caret::after { content: "▮"; margin-left: 5px; color: var(--m); animation: blink 1.06s steps(1) infinite; }
+
+/* Microanimaciones extra */
+.live-badge.on { animation: livepulse 1.4s ease-in-out infinite; }
+@keyframes livepulse { 0%,100% { opacity: 1; text-shadow: 0 0 8px rgba(255,84,112,.55); } 50% { opacity: .72; text-shadow: 0 0 16px rgba(255,84,112,.9); } }
+.live-badge.off { animation: offpulse 3.4s ease-in-out infinite; }
+@keyframes offpulse { 0%,100% { opacity: .8; } 50% { opacity: .5; } }
+@keyframes borderflick { 0%,95%,100% { border-color: var(--m); } 96% { border-color: var(--m-d); } 97% { border-color: var(--m); } 98% { border-color: var(--m-d); } }
+@keyframes scanbreath { 0%,100% { opacity: .82; } 50% { opacity: 1; } }
+@keyframes scanroll { to { background-position: 0 60px; } }
+
+/* Profundidad en el panel de canal + parpadeo raro del borde */
+.channel { box-shadow: inset 0 0 30px rgba(250,77,213,.1), 0 0 34px -12px rgba(250,77,213,.28); animation: borderflick 13s infinite; }
+.btn.enter { transition: filter .15s, box-shadow .15s, transform .1s; }
+.btn.enter:hover { transform: translateX(2px); }
+
+@media (max-width: 900px) { .hud-top, .hud-bot { display: none; } }
+
+/* Cinema: pantalla de "póster" con PLAY (canal con su propia personalidad) */
+.theater .screenbox { position: relative; }
+.cine-poster { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; background: radial-gradient(80% 70% at 50% 40%, rgba(250,77,213,.08), #06040b); }
+.cine-badge { font-size: 12px; letter-spacing: 3px; color: var(--mud); }
+.cine-title { font-size: 26px; font-weight: bold; color: #fff; letter-spacing: 2px; text-shadow: 0 0 18px rgba(250,77,213,.45); }
+.cine-desc { font-size: 13px; color: var(--mud); max-width: 72%; line-height: 1.5; }
+.cine-play { margin-top: 6px; font-size: 16px; padding: 10px 28px; }
+.cine-meta { position: absolute; bottom: 10px; font-size: 10px; letter-spacing: 2px; color: var(--dim); }
