@@ -1,47 +1,42 @@
 // ─────────────────────────────────────────────────────────────
-// Sesión de admin (candado suave con contraseña de config.js).
-// Solo tú (admin) puedes publicar noticias y moderar el graffiti.
+// Admin REAL con Supabase Auth (email + contraseña). Solo tú (el usuario
+// admin que creaste en Supabase) puede publicar noticias/eventos y moderar.
+// La seguridad de verdad la imponen las reglas (RLS) del backend.
 // ─────────────────────────────────────────────────────────────
-import { CONFIG } from "./config.js";
+import { supabase } from "./supabase.js";
 
-const K = "kg_admin";
-let _admin = sessionStorage.getItem(K) === "1";
+let _admin = false;
 const subs = new Set();
+function emit() { subs.forEach((f) => { try { f(_admin); } catch {} }); }
+
+supabase.auth.getSession().then(({ data }) => { _admin = !!data.session; emit(); });
+supabase.auth.onAuthStateChange((_e, session) => { _admin = !!session; emit(); });
 
 export function isAdmin() { return _admin; }
 export function onAdminChange(fn) { subs.add(fn); }
-function emit() { subs.forEach((f) => f(_admin)); }
-
-function setAdmin(v) {
-  _admin = v;
-  if (v) sessionStorage.setItem(K, "1");
-  else sessionStorage.removeItem(K);
-  emit();
-}
 
 export function toggleAdmin() {
-  if (_admin) setAdmin(false);
+  if (_admin) supabase.auth.signOut();
   else openLogin();
 }
 
 function openLogin() {
   const ov = document.createElement("div");
   ov.className = "modal-ov";
-  ov.innerHTML = `<div class="modal"><h3>🔒 ACCESO ADMIN</h3><input type="password" id="pw" placeholder="contraseña" /><div class="mrow"><button class="btn" id="ok">ENTRAR</button><button class="btn ghost" id="cancel">CANCELAR</button></div><div class="merr" id="err"></div></div>`;
+  ov.innerHTML = `<div class="modal"><h3>🔒 ACCESO ADMIN</h3><input type="email" id="em" placeholder="tu email" /><input type="password" id="pw" placeholder="contraseña" /><div class="mrow"><button class="btn" id="ok">ENTRAR</button><button class="btn ghost" id="cancel">CANCELAR</button></div><div class="merr" id="err"></div></div>`;
   document.body.appendChild(ov);
+  const em = ov.querySelector("#em");
   const pw = ov.querySelector("#pw");
-  setTimeout(() => pw.focus(), 30);
+  setTimeout(() => em.focus(), 30);
   const close = () => ov.remove();
-  const submit = () => {
-    if (pw.value === CONFIG.adminPassword) { setAdmin(true); close(); }
-    else ov.querySelector("#err").textContent = "Contraseña incorrecta";
+  const submit = async () => {
+    ov.querySelector("#err").textContent = "Entrando…";
+    const { error } = await supabase.auth.signInWithPassword({ email: em.value.trim(), password: pw.value });
+    if (error) ov.querySelector("#err").textContent = "Email o contraseña incorrectos.";
+    else close();
   };
   ov.querySelector("#ok").onclick = submit;
   ov.querySelector("#cancel").onclick = close;
-  pw.addEventListener("keydown", (e) => {
-    e.stopPropagation();
-    if (e.key === "Enter") submit();
-    if (e.key === "Escape") close();
-  });
+  [em, pw].forEach((el) => el.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") submit(); if (e.key === "Escape") close(); }));
   ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
 }

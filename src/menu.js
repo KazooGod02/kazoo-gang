@@ -9,7 +9,7 @@ import { mountSnake } from "./games/snake.js";
 import { mountGato } from "./games/gato.js";
 import { mountRunner } from "./games/runner.js";
 import { mountFnaf } from "./games/fnaf.js";
-import { store, seedIfEmpty } from "./store.js";
+import { store, seedIfEmpty, onChange } from "./store.js";
 import { isAdmin, toggleAdmin, onAdminChange } from "./admin.js";
 import { mountNews } from "./channels/news.js";
 import { mountGang } from "./channels/gang.js";
@@ -295,8 +295,12 @@ export function runMenu(root) {
   refreshLive();
   setInterval(refreshLive, 60000);
 
-  // Aviso al entrar si hay noticias sin ver
-  if (store.hasUnseen()) setTimeout(() => showToast(store.news()[0].title), 900);
+  // Tiempo real: refresca previews y avisa de noticias nuevas cuando llegan.
+  let toastChecked = false;
+  onChange(() => {
+    if (!inChannel) renderList();
+    if (!toastChecked && store.news().length) { toastChecked = true; if (store.hasUnseen()) showToast(store.news()[0].title); }
+  });
   // Aviso de evento próximo (≤ ~3 días)
-  setTimeout(() => checkEventPopup(crt, audio), 1700);
+  setTimeout(() => checkEventPopup(crt, audio), 2200);
 }

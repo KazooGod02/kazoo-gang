@@ -4,7 +4,7 @@
 // Cada quien edita/borra lo suyo; el admin puede con todo.
 // ─────────────────────────────────────────────────────────────
 import { CONFIG } from "../config.js";
-import { store, uid, ownerId } from "../store.js";
+import { store, uid, ownerId, onChange } from "../store.js";
 import { isAdmin } from "../admin.js";
 
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -134,7 +134,8 @@ export function mountGang(stage, { audio }) {
 
   sizeCanvas();
   render();
+  const off = onChange(() => render());
   const onResize = () => sizeCanvas();
   window.addEventListener("resize", onResize);
-  return () => { window.removeEventListener("resize", onResize); stage.innerHTML = ""; };
+  return () => { off(); window.removeEventListener("resize", onResize); stage.innerHTML = ""; };
 }

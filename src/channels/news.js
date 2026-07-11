@@ -3,7 +3,7 @@
 // abren al clic para ver la noticia completa (con miniatura/video).
 // El admin puede publicar (con negrita/cursiva/etc.), editar y borrar.
 // ─────────────────────────────────────────────────────────────
-import { store, uid } from "../store.js";
+import { store, uid, onChange } from "../store.js";
 import { isAdmin } from "../admin.js";
 
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -147,5 +147,6 @@ export function mountNews(stage, { audio, onPublish }) {
 
   render();
   store.markSeen(); // al abrir el canal, quedan vistas
-  return () => { stage.innerHTML = ""; };
+  const off = onChange(() => { render(); store.markSeen(); });
+  return () => { off(); stage.innerHTML = ""; };
 }

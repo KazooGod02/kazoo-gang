@@ -173,7 +173,7 @@ canvas.game { background: #05060a; display: block; image-rendering: pixelated; m
 .modal { width: 100%; max-width: 380px; background: #0d0a14; border: 2px solid var(--m); padding: 22px; box-shadow: 0 0 40px rgba(250,77,213,.3); }
 .modal.modal-lg { max-width: 560px; max-height: 88vh; overflow-y: auto; }
 .modal h3 { margin: 0 0 14px; color: var(--m); letter-spacing: 2px; }
-.modal input[type=text], .modal input[type=password] { width: 100%; background: #07060b; border: 1px solid var(--m-d); color: #fff; padding: 9px 11px; font-family: inherit; margin-bottom: 10px; }
+.modal input[type=text], .modal input[type=password], .modal input[type=email] { width: 100%; background: #07060b; border: 1px solid var(--m-d); color: #fff; padding: 9px 11px; font-family: inherit; margin-bottom: 10px; }
 .modal input:focus { outline: none; border-color: var(--m); }
 .mrow { display: flex; gap: 10px; margin-top: 12px; }
 .merr { margin-top: 10px; font-size: 12px; color: #ff6b6b; min-height: 14px; }
