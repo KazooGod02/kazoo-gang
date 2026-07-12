@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Kazoo · Conectando TikTok</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: #0a0b0d; color: #f2f2f5;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .card {
+      max-width: 420px; margin: 24px; padding: 32px 28px; text-align: center;
+      background: #141518; border: 1px solid #26262c; border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .logo { font-weight: 800; letter-spacing: -.02em; font-size: 22px; color: #fa4dd5; }
+    h1 { font-size: 17px; margin: 18px 0 8px; }
+    p { font-size: 14px; line-height: 1.5; color: #a8a8b3; margin: 6px 0; }
+    a { color: #fa4dd5; font-weight: 700; text-decoration: none; }
+    .spin {
+      width: 34px; height: 34px; margin: 20px auto 6px;
+      border: 3px solid #2a2a31; border-top-color: #fa4dd5; border-radius: 50%;
+      animation: r .8s linear infinite;
+    }
+    @keyframes r { to { transform: rotate(360deg); } }
+    .err { color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">KAZOO</div>
+    <div class="spin" id="spin"></div>
+    <h1 id="title">Conectando con Kazoo App…</h1>
+    <p id="msg">No cierres esta pestaña, te regresamos a la app en un segundo.</p>
+  </div>
+  <script>
+    (function () {
+      var p = new URLSearchParams(location.search);
+      var code = p.get("code");
+      var state = p.get("state") || "";
+      var err = p.get("error") || p.get("errCode");
+      var errDesc = p.get("error_description") || "";
+      var spin = document.getElementById("spin");
+      var title = document.getElementById("title");
+      var msg = document.getElementById("msg");
+
+      function fail(text) {
+        spin.style.display = "none";
+        title.textContent = "No se pudo conectar";
+        title.className = "err";
+        msg.innerHTML = text;
+      }
+
+      if (err) {
+        fail("TikTok rechazó la conexión: <b>" + err + "</b>" + (errDesc ? "<br>" + errDesc : "") +
+             "<br><br>Vuelve a Kazoo App e inténtalo de nuevo.");
+        return;
+      }
+      if (!code) {
+        fail("Falta el código de TikTok en la respuesta. Vuelve a Kazoo App e inténtalo de nuevo.");
+        return;
+      }
+
+      // Rebote al servidor local de la Kazoo App (puerto fijo 3000).
+      // TikTok solo ve ESTA URL HTTPS; el navegador es quien salta a localhost.
+      var target = "http://localhost:3000/api/auth/tiktok/callback?code=" +
+        encodeURIComponent(code) + "&state=" + encodeURIComponent(state);
+
+      location.replace(target);
+
+      // Fallback por si la app no está abierta / no responde.
+      setTimeout(function () {
+        spin.style.display = "none";
+        title.textContent = "¿No abrió Kazoo App?";
+        msg.innerHTML = "Asegúrate de tener la Kazoo App abierta y luego " +
+          '<a href="' + target + '">haz clic aquí</a>.';
+      }, 3000);
+    })();
+  </script>
+</body>
+</html>
