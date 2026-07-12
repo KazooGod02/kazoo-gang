@@ -20,7 +20,7 @@ function downscale(file, max = 480) {
 
 export function mountGang(stage, { audio }) {
   const me = ownerId();
-  let mode = "move", color = COLORS[0], brush = 4, stroke = null;
+  let mode = "move", color = COLORS[0], brush = 4, stroke = null, erasing = false;
 
   stage.innerHTML = `
     <div class="board-wrap">
@@ -51,7 +51,16 @@ export function mountGang(stage, { audio }) {
   stage.querySelector("#brush").oninput = (e) => (brush = +e.target.value);
   if (isAdmin()) stage.querySelector("#clearAll").onclick = () => { if (confirm("¿Borrar TODO el muro?")) { store.graffiti().slice().forEach((g) => store.deleteGraffiti(g.id)); audio.staticBurst(0.12); render(); } };
 
-  stage.querySelectorAll(".tool").forEach((b) => { b.onclick = () => { mode = b.dataset.mode; stage.querySelectorAll(".tool").forEach((t) => t.classList.remove("sel")); b.classList.add("sel"); board.style.cursor = mode === "move" ? "default" : mode === "erase" ? "not-allowed" : "crosshair"; }; });
+  stage.querySelectorAll(".tool").forEach((b) => { b.onclick = () => { mode = b.dataset.mode; stage.querySelectorAll(".tool").forEach((t) => t.classList.remove("sel")); b.classList.add("sel"); board.style.cursor = mode === "move" ? "default" : mode === "erase" ? "cell" : "crosshair"; }; });
+
+  // Goma: borra los trazos del pincel cercanos al cursor (además de items sueltos).
+  function eraseAt(nx, ny, rad = 0.04) {
+    let changed = false;
+    items().filter((i) => i.type === "draw" && canEdit(i)).forEach((it) => {
+      if (it.points.some((p) => Math.hypot(p[0] - nx, p[1] - ny) < rad)) { store.deleteGraffiti(it.id); changed = true; }
+    });
+    if (changed) { audio.staticBurst(0.05); redraw(); }
+  }
 
   const items = () => store.graffiti();
   const canEdit = (it) => isAdmin() || it.owner === me;
@@ -117,18 +126,24 @@ export function mountGang(stage, { audio }) {
     if (e.target.closest(".bitem")) return;
     const rect = board.getBoundingClientRect();
     const nx = (e.clientX - rect.left) / rect.width, ny = (e.clientY - rect.top) / rect.height;
-    if (mode === "paint") { stroke = { id: uid(), type: "draw", color, size: brush, owner: me, ts: Date.now(), points: [[nx, ny]] }; try { board.setPointerCapture(e.pointerId); } catch {} }
+    if (mode === "erase") { erasing = true; try { board.setPointerCapture(e.pointerId); } catch {} eraseAt(nx, ny); }
+    else if (mode === "paint") { stroke = { id: uid(), type: "draw", color, size: brush, owner: me, ts: Date.now(), points: [[nx, ny]] }; try { board.setPointerCapture(e.pointerId); } catch {} }
     else if (mode === "text") { const t = prompt("Tu texto:"); if (t) { store.addGraffiti({ id: uid(), type: "text", content: t.slice(0, 80), color, size: 26, x: nx * 100, y: ny * 100, rot: (Math.random() * 16 - 8) | 0, owner: me, ts: Date.now() }); audio.enterSfx(); render(); } }
     else if (mode === "post") { const ti = prompt("Título del post:"); if (!ti) return; const bo = prompt("Texto:") || ""; const by = prompt("Tu nombre (opcional):") || ""; store.addGraffiti({ id: uid(), type: "post", title: ti.slice(0, 40), body: bo.slice(0, 220), by: by.slice(0, 18), color, x: nx * 100, y: ny * 100, owner: me, ts: Date.now() }); audio.enterSfx(); render(); }
     else if (mode === "image") { imgpick._pos = [nx * 100, ny * 100]; imgpick.click(); }
   });
   board.addEventListener("pointermove", (e) => {
-    if (!stroke) return;
+    if (!stroke && !erasing) return;
     const rect = board.getBoundingClientRect();
-    stroke.points.push([(e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height]);
+    const nx = (e.clientX - rect.left) / rect.width, ny = (e.clientY - rect.top) / rect.height;
+    if (erasing) { eraseAt(nx, ny); return; }
+    stroke.points.push([nx, ny]);
     drawStroke(stroke);
   });
-  board.addEventListener("pointerup", () => { if (stroke) { if (stroke.points.length > 1) store.addGraffiti(stroke); stroke = null; audio.beep(480, 0.03); } });
+  board.addEventListener("pointerup", () => {
+    erasing = false;
+    if (stroke) { if (stroke.points.length > 1) store.addGraffiti(stroke); stroke = null; audio.beep(480, 0.03); }
+  });
 
   imgpick.onchange = async (e) => { const f = e.target.files[0]; if (!f) return; const src = await downscale(f); const [x, y] = imgpick._pos || [40, 30]; store.addGraffiti({ id: uid(), type: "image", src, w: 160, x, y, rot: (Math.random() * 10 - 5) | 0, owner: me, ts: Date.now() }); audio.enterSfx(); e.target.value = ""; render(); };
 

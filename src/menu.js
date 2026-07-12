@@ -8,7 +8,12 @@ import { mountFlappy } from "./games/flappy.js";
 import { mountSnake } from "./games/snake.js";
 import { mountGato } from "./games/gato.js";
 import { mountRunner } from "./games/runner.js";
-import { mountFnaf } from "./games/fnaf.js";
+import { mountTetris } from "./games/tetris.js";
+import { mountInvaders } from "./games/invaders.js";
+import { mountPacman } from "./games/pacman.js";
+import { mountRacer } from "./games/racer.js";
+import { mountMaze } from "./games/maze.js";
+import { mountBreakout } from "./games/breakout.js";
 import { store, seedIfEmpty, onChange } from "./store.js";
 import { isAdmin, toggleAdmin, onAdminChange } from "./admin.js";
 import { mountNews } from "./channels/news.js";
@@ -49,6 +54,22 @@ export function runMenu(root) {
   const chNum = screen.querySelector("#chNum");
   const adminBtn = screen.querySelector("#adminBtn");
   const evBtn = screen.querySelector("#evBtn");
+
+  // ── Easter egg: retrato misterioso. Al picarle → video Uvuvwevwe… ──
+  const portrait = el("button", "mystery-face");
+  portrait.title = "¿…?";
+  portrait.innerHTML = `<img src="https://img.youtube.com/vi/VG2WOZx4FVE/hqdefault.jpg" alt="" draggable="false" />`;
+  crt.appendChild(portrait);
+  portrait.onclick = () => {
+    audio.enterSfx(); audio.staticBurst(0.1);
+    const ov = el("div", "uvu-overlay");
+    ov.innerHTML = `<div class="uvu-box"><button class="uvu-x" title="Cerrar">✕</button><iframe src="https://www.youtube.com/embed/VG2WOZx4FVE?start=16&autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe></div>`;
+    crt.appendChild(ov);
+    requestAnimationFrame(() => ov.classList.add("show"));
+    const close = () => { ov.classList.remove("show"); setTimeout(() => ov.remove(), 200); audio.blip && audio.blip(); };
+    ov.querySelector(".uvu-x").onclick = close;
+    ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
+  };
 
   // Transición tipo "cambio de frecuencia" (glitch CRT) entre canales.
   const fxGlitch = crt.querySelector("#fxGlitch");
@@ -92,13 +113,13 @@ export function runMenu(root) {
       n: "02", name: "KAZOO CINEMA",
       preview: `<div class="pv-tag">🎬 KAZOO CINEMA</div><div class="pv-big">En función · 24/7</div><div class="pv-line">Solo tus videos largos, todo el día, como en el cine.</div><button class="btn enter">▶ ENTRAR A LA SALA</button>`,
       open: (stage) => {
-        const list = CONFIG.cinemaVideos;
+        // Orden ALEATORIO en cada entrada y arranque automático (sin botón PLAY).
+        const list = CONFIG.cinemaVideos.slice().sort(() => Math.random() - 0.5);
         const first = list[0];
         const rest = list.slice(1).join(",");
         const src = `https://www.youtube-nocookie.com/embed/${first}?playlist=${rest}&loop=1&autoplay=1&rel=0&modestbranding=1`;
-        stage.innerHTML = `<div class="theater"><div class="curtain left"></div><div class="curtain right"></div><div class="screenbox" id="cineScreen"><div class="cine-poster"><div class="cine-badge">🎬 KAZOO CINEMA</div><div class="cine-title">FUNCIÓN CONTINUA</div><div class="cine-desc">Tus videos largos en loop, 24/7. ${list.length} títulos en cartelera.</div><button class="btn cine-play">▶ PLAY</button><div class="cine-meta">CH02 · 1080p · DUR ∞</div></div></div><div class="seats"></div></div>`;
-        const box = stage.querySelector("#cineScreen");
-        stage.querySelector(".cine-play").onclick = () => { audio.enterSfx(); box.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`; };
+        stage.innerHTML = `<div class="theater"><div class="curtain left"></div><div class="curtain right"></div><div class="screenbox" id="cineScreen"><iframe src="${src}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe></div><div class="seats"></div></div>`;
+        audio.enterSfx();
         return () => { stage.innerHTML = ""; };
       },
     },
@@ -117,14 +138,19 @@ export function runMenu(root) {
     },
     {
       n: "05", name: "MINIJUEGOS",
-      preview: `<div class="pv-tag">🕹️ MINIJUEGOS</div><div class="pv-line">🐤 Flappy Gata</div><div class="pv-line">🐍 Snake (flechas/WASD)</div><div class="pv-line"># Gato vs IA</div><div class="pv-line">🏃 Kazoo Runner</div><button class="btn enter">▶ JUGAR</button>`,
+      preview: `<div class="pv-tag">🕹️ MINIJUEGOS</div><div class="pv-line">10 juegos: Tetris, Pac-Man, Invaders…</div><div class="pv-line">Flechas / WASD / espacio</div><button class="btn enter">▶ JUGAR</button>`,
       open: (stage) => {
         const games = [
+          { t: "🧱 Kazoo Tetris", m: mountTetris },
+          { t: "👾 Space Invaders", m: mountInvaders },
+          { t: "🟡 Kazoo-Man", m: mountPacman },
+          { t: "🏎️ Kazoo Motorist", m: mountRacer },
+          { t: "🧩 Maze", m: mountMaze },
+          { t: "🎯 Breakout", m: mountBreakout },
           { t: "🐤 Flappy Gata", m: mountFlappy },
           { t: "🐍 Snake", m: mountSnake },
           { t: "#  Gato vs IA", m: mountGato },
           { t: "🏃 Kazoo Runner", m: mountRunner },
-          { t: "🌙 Noche en Kazoo (FNAF)", m: mountFnaf },
         ];
         let gclean = null;
         function lobby() {

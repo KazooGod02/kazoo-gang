@@ -37,7 +37,8 @@ export function mountRunner(container, audio) {
       player.vy += 0.62 * dt;
       player.y += player.vy * dt;
       if (player.y >= gY) { player.y = gY; player.vy = 0; player.ground = true; }
-      if (obs.length === 0 || obs[obs.length - 1].x < W - 150 - Math.random() * 180) obs.push({ x: W, w: 18 + Math.random() * 16, h: 26 + Math.random() * 30 });
+      // Separación mínima amplia (antes salían muy juntos e injusto): hueco 280–480px.
+      if (obs.length === 0 || obs[obs.length - 1].x < W - 280 - Math.random() * 200) obs.push({ x: W, w: 18 + Math.random() * 16, h: 26 + Math.random() * 30 });
       obs.forEach((o) => (o.x -= speed * dt));
       obs = obs.filter((o) => o.x + o.w > 0);
       obs.forEach((o) => {
