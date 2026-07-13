@@ -386,3 +386,27 @@ canvas.game { background: #05060a; display: block; image-rendering: pixelated; m
 .uvu-box iframe { width: 100%; height: 100%; border: 0; }
 .uvu-x { position: absolute; top: 8px; right: 8px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,.7); color: #fff; font-size: 16px; cursor: pointer; }
 .uvu-x:hover { background: #fa4dd5; }
+
+/* ── Wordle ── */
+.wordle { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px; width: 100%; height: 100%; justify-content: center; }
+.wd-grid { display: flex; flex-direction: column; gap: 6px; }
+.wd-row { display: flex; gap: 6px; }
+.wd-tile { width: 46px; height: 46px; display: grid; place-items: center; font: bold 24px 'Courier New', monospace; color: #fff; text-transform: uppercase; border: 2px solid #3a2140; background: #0d0810; border-radius: 4px; transition: transform .1s; }
+.wd-tile.filled { border-color: #6e1a5c; }
+.wd-tile.reveal { animation: wdFlip .5s ease; }
+@keyframes wdFlip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+.wd-tile.correct { background: #2e9e4f; border-color: #2e9e4f; }
+.wd-tile.present { background: #d4a017; border-color: #d4a017; }
+.wd-tile.absent { background: #2a2230; border-color: #2a2230; color: #9a8fa5; }
+.wd-msg { font: 13px 'Courier New', monospace; color: #d9c8e6; letter-spacing: 1px; min-height: 18px; text-align: center; }
+.wd-msg.flash { color: #fa4dd5; text-shadow: 0 0 10px rgba(250,77,213,.6); }
+.wd-kb { display: flex; flex-direction: column; gap: 5px; width: 100%; max-width: 400px; }
+.wd-kbrow { display: flex; gap: 4px; justify-content: center; }
+.wd-key { flex: 1; min-width: 22px; height: 40px; border: none; border-radius: 5px; background: #3a2140; color: #fff; font: bold 13px 'Courier New', monospace; cursor: pointer; text-transform: uppercase; transition: transform .06s, background .15s; }
+.wd-key.wide { flex: 1.5; font-size: 15px; }
+.wd-key:hover { background: #55305e; }
+.wd-key:active { transform: scale(.92); }
+.wd-key.correct { background: #2e9e4f; }
+.wd-key.present { background: #d4a017; }
+.wd-key.absent { background: #201826; color: #6a5f72; }
+@media (max-width: 480px) { .wd-tile { width: 38px; height: 38px; font-size: 20px; } .wd-key { height: 36px; } }

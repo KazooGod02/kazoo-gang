@@ -14,6 +14,7 @@ import { mountPacman } from "./games/pacman.js";
 import { mountRacer } from "./games/racer.js";
 import { mountMaze } from "./games/maze.js";
 import { mountBreakout } from "./games/breakout.js";
+import { mountWordle } from "./games/wordle.js";
 import { store, seedIfEmpty, onChange } from "./store.js";
 import { isAdmin, toggleAdmin, onAdminChange } from "./admin.js";
 import { mountNews } from "./channels/news.js";
@@ -138,9 +139,10 @@ export function runMenu(root) {
     },
     {
       n: "05", name: "MINIJUEGOS",
-      preview: `<div class="pv-tag">🕹️ MINIJUEGOS</div><div class="pv-line">10 juegos: Tetris, Pac-Man, Invaders…</div><div class="pv-line">Flechas / WASD / espacio</div><button class="btn enter">▶ JUGAR</button>`,
+      preview: `<div class="pv-tag">🕹️ MINIJUEGOS</div><div class="pv-line">11 juegos: Wordle, Tetris, Pac-Man…</div><div class="pv-line">Flechas / WASD / espacio</div><button class="btn enter">▶ JUGAR</button>`,
       open: (stage) => {
         const games = [
+          { t: "🔤 Kazoo Wordle", m: mountWordle },
           { t: "🧱 Kazoo Tetris", m: mountTetris },
           { t: "👾 Space Invaders", m: mountInvaders },
           { t: "🟡 Kazoo-Man", m: mountPacman },
