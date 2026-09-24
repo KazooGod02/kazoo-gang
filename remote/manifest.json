@@ -1,7 +1,6 @@
 {
   "name": "Kazoo Remote",
   "short_name": "Remote",
-  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
